@@ -38,3 +38,7 @@ npm run dev
 ## Limitations
 - Only run on websites you own or have permission to test.
 - This is a smoke test tool, not a full security scanner.
+
+## Potential problems you may face while trying to run project:
+- This is not optimized for MacOS, so you may face issues while trying to run on mac.
+- Due to the limited development time we, the devs, had to develop this, there may be a few bugs while running, but please be assured the system works.
