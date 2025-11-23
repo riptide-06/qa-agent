@@ -1,35 +1,38 @@
 from typing import Dict
-import asyncio
-from app.models import TestResult, Issue
+from app.models import TestResult
 from app.agent.core import QABrowserAgent
 from app.agent.reporting import generate_markdown_report
 
 async def run_agent_task(run_id: str, url: str, site_type: str, runs: Dict[str, TestResult]):
-    print(f"Starting agent run {run_id} for {url}")
+    print(f"[START] Starting agent run {run_id} for {url}")
     
     try:
-        # Initialize Agent
-        agent = QABrowserAgent(start_url=url)
+        runs[run_id].status = "running"
         
-        # Run Agent (Real Browser)
+        # 1. Initialize & Run Agent
+        agent = QABrowserAgent(start_url=url, max_steps=15) # Increased steps slightly for better coverage
         await agent.run()
         
-        # Generate Report
-        report = await generate_markdown_report(url, len(agent.steps_log), agent.issues)
+        # 2. Generate Intelligence Report
+        print("[INFO] Analyzing results with GPT-4o...")
         
-        # Update Result
+        # --- CHANGE IS HERE: Passing 'agent.steps_log' instead of len() ---
+        report = await generate_markdown_report(url, agent.steps_log, agent.issues)
+        
+        # 3. Save Results
         runs[run_id].status = "completed"
         runs[run_id].reportMarkdown = report
+        runs[run_id].issues = agent.issues
         runs[run_id].summary = {
             "issues": len(agent.issues),
-            "high": len([i for i in agent.issues if i.severity == 'high']),
-            "medium": len([i for i in agent.issues if i.severity == 'medium']),
-            "low": len([i for i in agent.issues if i.severity == 'low'])
+            "high": len([i for i in agent.issues if i.severity == "high"]),
+            "medium": len([i for i in agent.issues if i.severity == "medium"]),
+            "low": len([i for i in agent.issues if i.severity == "low"]),
         }
-        runs[run_id].issues = agent.issues
         
-        print(f"Agent run {run_id} completed")
+        print(f"[SUCCESS] Run {run_id} finished successfully.")
         
     except Exception as e:
-        print(f"Agent run {run_id} failed: {e}")
+        print(f"[ERROR] Run {run_id} CRASHED: {e}")
         runs[run_id].status = "error"
+        runs[run_id].reportMarkdown = f"# Critical System Error\n{str(e)}"

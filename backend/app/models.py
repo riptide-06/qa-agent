@@ -7,19 +7,19 @@ class TestRequest(BaseModel):
 
 class Issue(BaseModel):
     id: int
-    severity: str  # "low", "medium", "high"
-    type: str
+    severity: str  # "high", "medium", "low"
+    type: str      # e.g., "Broken Link"
     url: str
     steps: List[str]
-    observed: str
     expected: str
+    observed: str
     screenshot_path: Optional[str] = None
 
 class TestResult(BaseModel):
     runId: str
-    status: str  # "running", "completed", "error"
+    status: str  # "queued", "running", "completed", "error"
     reportMarkdown: Optional[str] = None
-    summary: Optional[Dict[str, Any]] = None
+    summary: Optional[Dict[str, int]] = None # {high: 2, medium: 1...}
     issues: Optional[List[Issue]] = None
 
 class TestResponse(BaseModel):
