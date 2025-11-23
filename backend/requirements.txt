@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+pydantic
+openai
+agisdk
+playwright
+python-multipart
